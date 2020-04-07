@@ -127,7 +127,12 @@ double zero_gragg(PARAM * p,int k){
 
   while(!stop && i<10){
 
-    calcul_a_b_c(p,&a,&b,&c,y,k);
+    //calcul_a_b_c(p,&a,&b,&c,y,k);
+    calcul_a(p,&a,y,k);
+    calcul_b(p,&b,y,k);
+    calcul_c(p,&c,y,k);
+
+
     /*if(i==0){
       printf("a:\n b:%f\n c %f\n",a,b,c);
     }*/

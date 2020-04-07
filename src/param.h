@@ -18,6 +18,12 @@ double f_prime(PARAM *p,double x);
 double f_seconde(PARAM *p,double x);
 double h(PARAM *p,double x,int k);
 void calcul_a_b_c(PARAM *p,double *a,double *b,double *c,double y,int k);
+void calcul_a(PARAM *p,double *a,double y,int k);
+void calcul_b(PARAM *p,double *b,double y,int k);
+void calcul_c(PARAM *p,double *c,double y,int k);
+
+
+
 void assert();
 
 

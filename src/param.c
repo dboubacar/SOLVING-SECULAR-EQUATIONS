@@ -84,14 +84,35 @@ double h(PARAM *p,double x,int k){
   return ((pow(p->zeta[k],2)) /d1)+((pow(p->zeta[k+1],2))/d2) ;
 }
 
-void calcul_a_b_c(PARAM *p,double *a,double *b,double *c,double y,int k){
+/*void calcul_a_b_c(PARAM *p,double *a,double *b,double *c,double y,int k){
   double DELTA_k = p->delta[k] - y;
   double DELTA_k1 = p->delta[k+1] - y;
   double val_f=f(p,y);
   double val_fp=f_prime(p,y);
   double val_fs=f_seconde(p,y);
   //printf("f ok %f\n",val_fp);
-  *a=(DELTA_k+DELTA_k1)*val_f-DELTA_k*DELTA_k1*val_fp;
   *b= (DELTA_k *DELTA_k1 )*val_f;
   *c=val_f -(DELTA_k+DELTA_k1)*val_fp+DELTA_k*DELTA_k1*val_fs/2;
+}*/
+void calcul_a(PARAM *p,double *a,double y,int k){
+    double DELTA_k = p->delta[k] - y;
+    double DELTA_k1 = p->delta[k+1] - y;
+    double val_f=f(p,y);
+    double val_fp=f_prime(p,y);
+    *a=(DELTA_k+DELTA_k1)*val_f-DELTA_k*DELTA_k1*val_fp;
+}
+
+void calcul_b(PARAM *p,double *b,double y,int k){
+    double DELTA_k = p->delta[k] - y;
+    double DELTA_k1 = p->delta[k+1] - y;
+    double val_f=f(p,y);
+    *b= (DELTA_k *DELTA_k1 )*val_f;
+}
+void calcul_c(PARAM *p,double *c,double y,int k){
+    double DELTA_k = p->delta[k] - y;
+    double DELTA_k1 = p->delta[k+1] - y;
+    double val_f=f(p,y);
+    double val_fp=f_prime(p,y);
+    double val_fs=f_seconde(p,y);
+    *c=val_f -(DELTA_k+DELTA_k1)*val_fp+DELTA_k*DELTA_k1*val_fs/2;
 }
