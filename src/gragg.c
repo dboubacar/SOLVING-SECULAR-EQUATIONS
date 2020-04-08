@@ -118,10 +118,15 @@ int stop_monotone(double *y,double *y1,double *y2,int j){
  */
 
 double zero_gragg(PARAM * p,int k){
+  //printf("%d\n",k );
   double a, b, c,y,y1,y2;
   int i=0,stop=0;
-  if(k<p->DIM-1){y=initial_monotone(p,k);}
-  else{ y=initial_non_monotone(p);}
+  if(k<p->DIM-1){
+    y=initial_monotone(p,k);
+  }
+  else{
+     y=initial_non_monotone(p);
+   }
   //printf("y0%f\n",y);
   //printf("y0  %f",y);
 
@@ -146,5 +151,15 @@ double zero_gragg(PARAM * p,int k){
     //printf("y%d :%f\n",i,y);
 
   }
+//  printf("ok %f\n",y);
   return y;
+}
+
+/**
+ * La fonction gragg
+ */
+ void gragg(PARAM *p,double *resultats){
+  for(int k=0; k<p->DIM; k++){
+    resultats[k]=zero_gragg(p,k);
+  }
 }
