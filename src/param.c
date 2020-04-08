@@ -12,22 +12,17 @@ void assert(){
 PARAM * init_param(){
   PARAM *p=malloc(sizeof(PARAM));
   p->DIM=4;
-
   p->zeta= malloc(sizeof(double)*p->DIM);
   p->delta= malloc(sizeof(double)*p->DIM);
-
   p->delta[0]=1;
   p->delta[1]=2;
   p->delta[2]=3 ;
   p->delta[3]=4;
-
-
   p->zeta[0] =0.0058 ;
   p->zeta[1]=0.5773;
   p->zeta[2]=0.5773;
   p->zeta[3] =0.5773;
   p->rho  = pow(10, -2);
-
 
 /*  p->zeta[0] =0.408044 ;  p->zeta[1]=0.373222;  p->zeta[2]=0.663589;  p->zeta[3] =0.50384;
   p->delta[0]=1.31585 ;p->delta[1]=1.44085;
@@ -36,6 +31,18 @@ PARAM * init_param(){
 
 
   return p;
+}
+
+
+
+void free_param(PARAM *p){
+  free(p->zeta);
+  free(p->delta);
+  p->zeta= NULL;    // précaution contre double array_free
+  p->delta=NULL;
+  p->DIM  = 0;
+  p->rho  =0;
+  free(p);
 }
 
 //la fonction g
