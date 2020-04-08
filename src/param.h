@@ -1,7 +1,5 @@
 #ifndef DEF_PARAM
 #define DEF_PARAM
-#include "param.h"
-#include <sys/time.h>
 
 
 typedef struct{
