@@ -10,16 +10,22 @@ void assert(){
 
 
 PARAM * init_param(){
-
-  PARAM *p=(PARAM*)malloc(sizeof(PARAM));
-  p->zeta= (double *)malloc(sizeof(double)*p->DIM);
-  p->delta= (double *)malloc(sizeof(double)*p->DIM);
+  PARAM *p=malloc(sizeof(PARAM));
   p->DIM=4;
-  p->delta[0]=1; p->delta[1]=2;
-  p->delta[2]=3 ;p->delta[3]=4;
+
+  p->zeta= malloc(sizeof(double)*p->DIM);
+  p->delta= malloc(sizeof(double)*p->DIM);
+
+  p->delta[0]=1;
+  p->delta[1]=2;
+  p->delta[2]=3 ;
+  p->delta[3]=4;
 
 
-  p->zeta[0] =0.0058 ;  p->zeta[1]=0.5773;  p->zeta[2]=0.5773;  p->zeta[3] =0.5773;
+  p->zeta[0] =0.0058 ;
+  p->zeta[1]=0.5773;
+  p->zeta[2]=0.5773;
+  p->zeta[3] =0.5773;
   p->rho  = pow(10, -2);
 
 
