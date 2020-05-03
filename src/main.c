@@ -1,45 +1,94 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "gragg.h"
 #include "param.h"
+#include "hybrid.h"
+#include <math.h>
 
-int main()
+
+double my_gettimeofday(){
+	struct timeval tmp_time;
+	gettimeofday(&tmp_time, NULL);
+	return tmp_time.tv_sec + (tmp_time.tv_usec * 1.0e-6L);
+}
+
+int main(int argc, char **argv)
 {
+  Secular *secu1=NULL;
+  Secular *secu2=NULL;
+  int choix,sizeMatrice=4;
+  double time1,time2,debut;
+  char titre[200];
+  if(argc == 3) {
+    choix=atoi(argv[1]);
+    sizeMatrice=atoi(argv[2]);
+    if((choix<0||choix>2)||sizeMatrice<2){
+      help();
+      exit(1);
+    }
+  }
+  else {
+    help();
+    exit(1);
+  }
 
-    PARAM * p= init_param();
-    //double x=1.33282;
-    //double r=gragg_zero(p,1);
-    //double r=f_seconde(p,x);
-    /*double a, b, c;
-    double y=1.764171;*/
+  const PARAM * p=init_param(sizeMatrice);
+  if(choix==0){
+    printf("\033[22;36m*************SOLVING SECULAR EQUATIONS WITH GRAGG'S SCHEME\n\033[0m");
+    debut=my_gettimeofday();
+    secu1=gragg(p);
+    time1=my_gettimeofday()-debut;
+  }else if (choix==1){
+    printf("\033[22;36m*************SOLVING SECULAR EQUATIONS WITH HYBRID SCHEME\n\033[0m");
+    debut=my_gettimeofday();
+    secu1=hybrid(p);
+    time1=my_gettimeofday()-debut;
+  }else{
+    printf("\033[22;36m*********SOLVING SECULAR EQUATIONS WITH GRAGG'S & HYBRID\n\033[0m");
+    debut=my_gettimeofday();
+    secu1=gragg(p);
+    time1=my_gettimeofday()-debut;
+    debut=my_gettimeofday();
+    secu2=hybrid(p);
+    time2=my_gettimeofday()-debut;
 
+  }
 
-  //  calcul_a_b_c(p,&a,&b,&c,y,1);
-    //double yn=y_suivant(y,a,b,c);*/
-    double* resultats= malloc(4*sizeof(double));
+  printf("\033[22;36mDATA:\n\033[0m");
+  printf("\033[22;32mzeta:\033[0m");
+  printf("[");
+  for(int i=0;i<p->DIM;i++){
+    if(i<p->DIM-2){
+      printf("%f ",p->zeta[i]);
+    }else{
+      printf("%f",p->zeta[i]);
+    }
+  }
+  printf("]\n");
+  printf("\033[22;32mdelta:\033[0m");
+  printf("[");
+  for(int i=0;i<p->DIM;i++){
+    if(i<p->DIM-2){
+      printf("%f ",p->delta[i]);
+    }else{
+      printf("%f",p->delta[i]);
+    }
+  }
+  printf("]\n");
+  printf("\033[22;32mrho:\033[0m");
+  printf("%f\n",p->rho);
 
-    /*resultats[0]=5;
-    resultats[1]=2;
-    resultats[2]=3;
-    resultats[3]=1;*/
-
-    /*rsol0 :1.000000
-    sol1 :2.003316
-    sol2 :3.003333
-    sol3 :0.000000*/
-    //double resultats[4];
-
-
-
-    gragg(p,resultats);
-    /*resultats[0]=zero_gragg(p,0);
-    resultats[1]=zero_gragg(p,1);
-    resultats[2]=zero_gragg(p,2);
-    resultats[3]=zero_gragg(p,3);*/
-    //printf("GRAGG y nouveau %f\n",resultats[0]);
-   printf("GRAG \nsol0 :%f\nsol1 :%f\nsol2 :%f\nsol3 :%f\n",resultats[0],resultats[1],resultats[2],resultats[3]);
-   free_param(p);
-
-    //printf("GRAG \nsol0 :%f\nsol1 :%f\nsol2 :%f\nsol3 :%f\n",sol0,sol1,sol2,sol3);
-    return 0;
+  if(choix==2){
+    strcpy(titre, "SOLUTION WITH GRAGG'S:(lambda,iteration):");
+    print_secular(secu1,sizeMatrice,titre,time1);
+    strcpy(titre, "SOLUTION WITH HYBRID:(lambda,iteration):");
+    print_secular(secu2,sizeMatrice,titre,time2);
+  }else{
+    strcpy(titre, "SOLUTION:(lambda,iteration):");
+    print_secular(secu1,sizeMatrice,titre,time1);
+  }
+	//PARAM *tmp=p;
+	free_data(p,secu1,secu2);
+  return 0;
 }
