@@ -1,110 +1,83 @@
+/*
+Résolution de l’équation séculaire
+  Par: Boubacar Diallo  et
+       Jeffrey  Kebey
+
+Dans le cadre du Pojet SFPN
+
+gragg.c
+------
+
+Les fonctions utilisees dans la methode de Gragg
+pour la resolution de l'equation seculaire f(x)=0.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-
 #include "gragg.h"
 #include "param.h"
-/**
- * y0 initial sur 0<=k<n-2
- */
-double initial_monotone(PARAM *p,int k){
+
+
+
+/*calcul le lambda initial sur l'interval monotone*/
+double initial_monotone(const PARAM *p,int k){
   double DELTA,a,b,c;
   double arg=(p->delta[k]+p->delta[k+1])/2;
 	DELTA=p->delta[k+1] - p->delta[k];
-  c=g(p,arg,k);
-  if(f(p,arg)>=0){
+  c=fun_g(p,arg,k);
+  if(fun_f(p,arg)>=0){
     a=c*DELTA+pow(p->zeta[k],2)+pow(p->zeta[k+1],2);
     b=pow(p->zeta[k],2)*DELTA;
   }else{
     a=-c*DELTA+pow(p->zeta[k],2)+pow(p->zeta[k+1],2);
     b=pow(p->zeta[k+1],2)*DELTA;
   }
-  if(a<=0){
-    return (a - sqrt(fabs(a*a - (4*b*c))))/(2 * c)+p->delta[k];
-  }else{
-    return (2 * b)/(a + sqrt(fabs(a*a - (4*b*c))))+p->delta[k];
-  }
+  return a<=0?(a - sqrt(fabs(a*a - (4*b*c))))/(2 * c)+p->delta[k]:(2 * b)/(a + sqrt(fabs(a*a - (4*b*c))))+p->delta[k];
+
 }
-/**
- * y0 initial sur k=n-1
- */
-double initial_non_monotone(PARAM *p){
-  double DELTA,a,b,c,somme;
+
+/*calcul le lambda initial sur l'interval non monotone*/
+double initial_non_monotone(const PARAM *p){
+  double DELTA,a,b,c,arg,delta_n_plus1;
   int n=p->DIM-1;
-  double arg=(p->delta[n]+p->delta[n-1])/2;
+  delta_n_plus1=deltaNPlus1(p);
+  arg=(p->delta[n]+delta_n_plus1)/2;
 	DELTA=p->delta[n] - p->delta[n-1];
-
-  c=g(p,arg,n);
-
-  if(f(p,arg)<=0){
-    if(c<=-h(p,p->delta[n],n))   {
-      somme=0;
-      for(int i=0; i<n; i++) {
-        somme+=pow(p->zeta[i],2);
-      }
-      return p->zeta[n] + somme/p->rho;
+  c=fun_g(p,arg,n-1);
+  a=-c*DELTA+pow(p->zeta[n-1],2)+pow(p->zeta[n],2);
+  b=-pow(p->zeta[n],2)*DELTA;
+  if(fun_f(p,arg)<=0){
+    if(c<=-fun_h(p,delta_n_plus1,n-1)){
+      return delta_n_plus1;
     }else{
-      a=-c*DELTA+pow(p->zeta[n-1],2)+pow(p->zeta[n],2);
-      b=-pow(p->zeta[n],2)*DELTA;
-      if(a>=0){
-        return (a + sqrt(fabs(a*a - (4*b*c))))/(2 * c)+ p->delta[n];
-      }
-      else{
-        return (2 * b) / (a - sqrt(fabs(a*a - (4*b*c))))  +p->delta[n];
-      }
+      return a>=0?(a + sqrt(fabs(a*a - (4*b*c))))/(2 * c)+ p->delta[n]:(2 * b) / (a - sqrt(fabs(a*a - (4*b*c))))  +p->delta[n];
     }
   }else{
-    a=-c*DELTA+pow(p->zeta[n-1],2)+pow(p->zeta[n],2);
-    b=-pow(p->zeta[n],2)*DELTA;
-    if(a>=0){
-      return (a + sqrt(fabs(a*a - (4*b*c))))/(2 * c)+ p->delta[n];
-    }
-    else{
-      return (2 * b) / (a - sqrt(fabs(a*a - (4*b*c))))  +p->delta[n];
-    }
+    return a>=0?(a + sqrt(fabs(a*a - (4*b*c))))/(2 * c)+ p->delta[n]:(2 * b) / (a - sqrt(fabs(a*a - (4*b*c))))  +p->delta[n];
   }
 
 }
 
-/**
- * le y suivant sachant y_prec precedent
- */
- double y_suivant(double y_prec,double a,double b,double c){
-   double apr=a<=0?(a - sqrt(a*a - (4*b*c)))/(2 * c):(2 * b)/(a + sqrt(a*a - (4*b*c)));
-   //printf("approch:%f\n",a);
-
-   return y_prec+apr;
- }
- /**
-  * critere d'arret de l'interval non monotone
-  */
-
-int stop_non_monotone(PARAM* p,double y,int k){
-  double t,som1=0,som2=0,e,r;
-  int K;
-  double em=pow(2, -52);
-  t=y-(p->delta[k]);
-	K=fabs(y-p->delta[k]) < fabs(y-p->delta[k+1])?k:k+1;
-
-  for(int j=0; j<k; j++) {
-		som1+=(k-j+6) * fabs(pow(p->zeta[j],2)/(p->delta[j] -y));
-  }
-  for(int j=k; j<p->DIM; j++) {
-      som2+=(j-k+5) * fabs(pow(p->zeta[j],2)/(p->delta[j] -y));
-	}
-  e=2*p->rho+som1+som2+fabs( f(p,(p->delta[K]+t)));
-  //printf("le e %f\n",e);
-
-  r=e*em+em*fabs(t)* f_prime(p,p->delta[k]-t);
-  double r1=fabs(f(p,p->delta[k]+t));
-
-  return r1<=r;
+/*Le lambda suivant egal au lamba precedent(y)
+ajouté à une valeure d'approximation(n)*/
+double y_next(const PARAM *p, double y,int k){
+  double DELTA_K,DELTA_KPLUS1,a,b,c,n;
+  double val_f=fun_f(p,y);
+  double val_fp=fun_fprime(p,y);
+  double val_fs=fun_fseconde(p,y);
+  DELTA_K=p->delta[k] - y;
+  DELTA_KPLUS1=k<(p->DIM-1)?(p->delta[k+1]-y):deltaNPlus1(p);
+  a=(DELTA_K+DELTA_KPLUS1)*val_f-DELTA_K*DELTA_KPLUS1*val_fp;
+  b= (DELTA_K *DELTA_KPLUS1 )*val_f;
+  c=val_f -(DELTA_K+DELTA_KPLUS1)*val_fp+DELTA_K*DELTA_KPLUS1*val_fs/2;
+  n=a>0?(2*b / (a + sqrt(fabs(a*a - 4*b*c)))):((a - sqrt(fabs(a*a - 4*b*c))) / 2*c);
+  return y+n;
 }
-/**
- * critere d'arret de l'interval monotone
- */
-int stop_monotone(double *y,double *y1,double *y2,int j){
+
+/*Determine le critere d'arret sur l'interval monotone*/
+bool stop_monotone(double *y,double *y1,double *y2,int j){
   *y2=*y1;*y1=*y;
   if(j<2){
     return 0;
@@ -113,53 +86,58 @@ int stop_monotone(double *y,double *y1,double *y2,int j){
   }
 }
 
-/**
- * trouver le zero de gragg
- */
-
-double zero_gragg(PARAM * p,int k){
-  //printf("%d\n",k );
-  double a, b, c,y,y1,y2;
-  int i=0,stop=0;
-  if(k<p->DIM-1){
-    y=initial_monotone(p,k);
+/*Determine le critere d'arret sur l'interval non monotone*/
+bool stop_non_monotone(const PARAM* p,double y,int k){
+  double DELTAK,tho,e,r1,r2,som=0;
+  double delta_k ,delta_kplus1;
+  delta_k=p->delta[k];
+  delta_kplus1=k<(p->DIM-1)?p->delta[k+1]:deltaNPlus1(p);
+  DELTAK=fabs(y-delta_k) < fabs(y-delta_kplus1)?delta_k:delta_kplus1;
+  tho=y-(DELTAK);
+  for(int j=0; j<=k; j++) {
+		som+=(k-j+6) * fabs((p->zeta[j]*p->zeta[j])/(p->delta[j] -y));
   }
-  else{
-     y=initial_non_monotone(p);
-   }
-  //printf("y0%f\n",y);
-  //printf("y0  %f",y);
+  for(int j=k; j<=p->DIM-1; j++) {
+      som+=(j-k+5) * fabs((p->zeta[j]*p->zeta[j])/(p->delta[j] -y));
+	}
+  e=2*p->rho+som+fabs(fun_f(p,(DELTAK+tho)));
+  r1=e*MACHEPS+MACHEPS*fabs(tho)* fabs(fun_fprime(p,DELTAK-tho));
+  r2=fabs(fun_f(p,DELTAK+tho));
+  return infOuEgale(r2,r1);
+}
 
-  while(!stop && i<10){
-
-    //calcul_a_b_c(p,&a,&b,&c,y,k);
-    calcul_a(p,&a,y,k);
-    calcul_b(p,&b,y,k);
-    calcul_c(p,&c,y,k);
-
-
-    /*if(i==0){
-      printf("a:\n b:%f\n c %f\n",a,b,c);
-    }*/
+/*Trouve le zero du gragg sur l'interavle
+  delta_k et delta_kplus1*/
+Secular * lambda_gragg(const PARAM * p,int k){
+  double y,y1=0,y2=0;
+  bool stop=false;
+  Secular *gr=malloc(sizeof(Secular));
+  gr->nbIter=1;
+  y=k<(p->DIM-1)?initial_monotone(p,k):initial_non_monotone(p);
+  while(!stop){
     if((p->rho > 0 && k != p->DIM-1) || (p->rho < 0 && k != 0)) {
-      stop=stop_monotone(&y,&y1,&y2,i);
+      stop=stop_monotone(&y,&y1,&y2,gr->nbIter);
     }else{
       stop=stop_non_monotone(p,y,k);
     }
-    y=y_suivant(y,a,b,c);
-    i++;
-    //printf("y%d :%f\n",i,y);
+    y=y_next(p,y,k);
+    gr->nbIter++;
+    gr->lambda=y;
 
   }
-//  printf("ok %f\n",y);
-  return y;
+  return gr;
 }
 
-/**
- * La fonction gragg
- */
- void gragg(PARAM *p,double *resultats){
-  for(int k=0; k<p->DIM; k++){
-    resultats[k]=zero_gragg(p,k);
-  }
-}
+ /* La fonction gragg */
+ Secular * gragg(const PARAM *p){
+   Secular *tab=(Secular*)malloc(p->DIM*sizeof(Secular));
+   Secular *tmp;
+   for(int i=0;i<p->DIM;i++){
+     tmp=lambda_gragg(p,i);
+     tab[i].nbIter=tmp->nbIter;
+     tab[i].lambda=tmp->lambda;
+     free(tmp);
+   }
+   return tab;
+
+ }
