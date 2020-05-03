@@ -1,13 +1,13 @@
 CC=gcc
 CFLAGS= -g -O3 -Wall
 LDFLAGS=
-EXEC=gragg
+EXEC=solv_secular
 LIB= -lm
 
 
 all: $(EXEC)
 
-gragg: param.o gragg.o main.o hybrid.o
+solv_secular: param.o gragg.o main.o hybrid.o
 	$(CC) -o $@ $^ $(LDFLAGS)  $(LIB)
 
 main.o: main.c gragg.h param.h hybrid.h
@@ -24,7 +24,7 @@ param.o: param.c
 
 
 clean:
-	rm -rf *.o
+	rm -rf *.o solv_secular
 
 mrproper: clean
 	rm -rf $(EXEC)
