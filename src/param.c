@@ -1,85 +1,70 @@
+/*
+Résolution de l’équation séculaire
+  Par: Boubacar Diallo  et
+       Jeffrey  Kebey
+
+Dans le cadre du Pojet SFPN
+
+param.c
+------
+
+Ces fonctions  implementent les fonctions mathematiques utilisees dans
+la methode de Gragg et hybride pour la resourde l'equation seculaire.
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "param.h"
 
-void assert(){
-  printf("Erreur a la ligne %d du fichier %s\n", __LINE__, __FILE__);
-}
-///dddddddddddddddddddddddddddbonnnnnnnnnnnnnnnnnnnnnnnnnnnnnnjour
 
 
-PARAM * init_param(){
+/*
+  Definie les parametres de la fonction f(x)
+*/
+PARAM * init_param(int dimension){
+  double norm,som=0.0;
   PARAM *p=malloc(sizeof(PARAM));
-  p->DIM=4;
+  double beta[5]={1,pow(10, -1),pow(10, -3), pow(10, -6), pow(10, -10)};
+  srand(time(NULL));
+  int betai= rand()%5;
+  p->DIM=dimension;
   p->zeta= malloc(sizeof(double)*p->DIM);
   p->delta= malloc(sizeof(double)*p->DIM);
-  p->delta[0]=1;
-  p->delta[1]=2;
-  p->delta[2]=3 ;
-  p->delta[3]=4;
-  p->zeta[0] =0.0058 ;
-  p->zeta[1]=0.5773;
-  p->zeta[2]=0.5773;
-  p->zeta[3] =0.5773;
-  p->rho  = pow(10, -2);
-
-/*  p->zeta[0] =0.408044 ;  p->zeta[1]=0.373222;  p->zeta[2]=0.663589;  p->zeta[3] =0.50384;
-  p->delta[0]=1.31585 ;p->delta[1]=1.44085;
-  p->delta[2]=2.40323 ;p->delta[3]=3.71694;
-  p->rho = -0.125;*/
-
-
+  for(int i=0; i<dimension; i++) {
+    p->delta[i]=(rand()/(double)RAND_MAX) +i+beta[betai];
+    p->zeta[i]=(rand()/(double)RAND_MAX)+beta[betai]+1;
+    som += pow(p->zeta[i],2);
+  }
+  norm=sqrt(som);
+  for(int i=0;i<dimension;i++){
+    p->zeta[i]=p->zeta[i]/norm;
+  }
+  p->rho  = 0.986602;
   return p;
 }
 
-
-
-void free_param(PARAM *p){
-  free(p->zeta);
-  free(p->delta);
-  p->zeta= NULL;    // précaution contre double array_free
-  p->delta=NULL;
-  p->DIM  = 0;
-  p->rho  =0;
-  free(p);
-}
-
-//la fonction g
-
-
-
-double g(PARAM *p,double x,int k){
-  double som=0.0;
-  for (int j=1 ; j<p->DIM; j++){
-     if ((j != k) && (j != k+1)){
-       som += (pow(p->zeta[j],2)) / (p->delta[j]-x) ;
-     }
-  }
-  return (p->rho +som);
-}
-
-
-double f(PARAM *p,double x){
+/*la fonction f(x)*/
+double fun_f(const PARAM *p,double x){
   double som=0.0;
   for (int i=0 ; i<p->DIM; i++){
-     som += (pow(p->zeta[i],2)) / (p->delta[i]-x) ;
+     som += (p->zeta[i]*p->zeta[i])/(p->delta[i]-x) ;
   }
   return 1 + p->rho *som;
 }
 
-
-
-double f_prime(PARAM *p,double x){
+/*la derivée premiére de la fonction f(x)*/
+double fun_fprime(const PARAM *p,double x){
   double som=0.0;
   for (int i=0 ; i<p->DIM; i++){
-     som += (pow(p->zeta[i],2)) / pow((p->delta[i]-x),2);
-
+     som += pow(p->zeta[i],2)/ pow((p->delta[i]-x),2);
   }
   return p->rho *som;
 }
 
-double f_seconde(PARAM *p,double x){
+/*la derivée seconde de la fonction f(x)*/
+double fun_fseconde(const PARAM *p,double x){
   double som=0.0;
   for (int i=0 ; i<p->DIM; i++){
      som += (2*pow(p->zeta[i],2)) / pow((p->delta[i]-x),3) ;
@@ -88,44 +73,137 @@ double f_seconde(PARAM *p,double x){
 
 }
 
+/*la fonction g(x)*/
+double fun_g(const PARAM *p,double x,int k){
+  double som=0.0;
+  for (int j=1 ; j<p->DIM; j++){
+     if ((j != k) && (j != k+1)){
+       som += (p->zeta[j]*p->zeta[j]) / (p->delta[j]-x) ;
+     }
+  }
+  return (p->rho +som);
+}
 
-
-double h(PARAM *p,double x,int k){
+/*la fonction h(x)*/
+double fun_h(const PARAM *p,double x,int k){
   double d1=p->delta[k]-x;
   double d2=p->delta[k+1]-x;
-  if(d1==0 && d2==0) assert();
   return ((pow(p->zeta[k],2)) /d1)+((pow(p->zeta[k+1],2))/d2) ;
 }
 
-/*void calcul_a_b_c(PARAM *p,double *a,double *b,double *c,double y,int k){
-  double DELTA_k = p->delta[k] - y;
-  double DELTA_k1 = p->delta[k+1] - y;
-  double val_f=f(p,y);
-  double val_fp=f_prime(p,y);
-  double val_fs=f_seconde(p,y);
-  //printf("f ok %f\n",val_fp);
-  *b= (DELTA_k *DELTA_k1 )*val_f;
-  *c=val_f -(DELTA_k+DELTA_k1)*val_fp+DELTA_k*DELTA_k1*val_fs/2;
-}*/
-void calcul_a(PARAM *p,double *a,double y,int k){
-    double DELTA_k = p->delta[k] - y;
-    double DELTA_k1 = p->delta[k+1] - y;
-    double val_f=f(p,y);
-    double val_fp=f_prime(p,y);
-    *a=(DELTA_k+DELTA_k1)*val_f-DELTA_k*DELTA_k1*val_fp;
+/*la derivée premiére de la fonction psi(x)*/
+double fun_psiprime(const PARAM *p,double x,int k){
+  double som=0.0;
+  for (int i=0 ; i<=k; i++){
+     som += (pow(p->zeta[i],2)) / pow((p->delta[i]-x),2);
+
+  }
+  return p->rho *som;
 }
 
-void calcul_b(PARAM *p,double *b,double y,int k){
-    double DELTA_k = p->delta[k] - y;
-    double DELTA_k1 = p->delta[k+1] - y;
-    double val_f=f(p,y);
-    *b= (DELTA_k *DELTA_k1 )*val_f;
+/*la derivée premiére de la fonction phi(x)*/
+double fun_phiprime(const PARAM *p,double x,int k){
+  double som=0.0;
+  for (int i=k+1; i<p->DIM; i++){
+     som += (pow(p->zeta[i],2)) / pow((p->delta[i]-x),2);
+
+  }
+  return p->rho *som;
 }
-void calcul_c(PARAM *p,double *c,double y,int k){
-    double DELTA_k = p->delta[k] - y;
-    double DELTA_k1 = p->delta[k+1] - y;
-    double val_f=f(p,y);
-    double val_fp=f_prime(p,y);
-    double val_fs=f_seconde(p,y);
-    *c=val_f -(DELTA_k+DELTA_k1)*val_fp+DELTA_k*DELTA_k1*val_fs/2;
+
+/*la fonction fm(x) utilisee dans la menthode hybride pour les 3 poles*/
+double fun_fm(const PARAM *p,double x,int k){
+  double som=0.0;
+  for (int i=0 ; i<p->DIM; i++){
+    if(i!=k){
+     som += (pow(p->zeta[i],2)) / (p->delta[i]-x) ;
+   }
+  }
+  return 1+p->rho*som;
+}
+
+/*la derivée premiére de la fonction phi(x)*/
+double fun_fmprime(const PARAM *p,double x,int k){
+  double som=0.0;
+  for (int i=0 ; i<p->DIM; i++){
+    if(i!=k){
+     som += (pow(p->zeta[i],2)) / pow(p->delta[i]-x,2) ;
+   }
+  }
+  return p->rho*som;
+}
+
+/*cette fonction permet de resourde le probleme d'egalite
+en double precision avec une erreur relative*/
+bool infOuEgale(double a, double b){
+   if(a==b)   return 1;
+   double absError= fabs(a-b);
+   a= fabs(a);
+   b= fabs(b);
+   return   absError <= EPSILON   ||   ( absError / (a>b? a:b) )  <=  EPSILON;
+}
+
+/*calcul le dernier delta sur l'interval non monotone*/
+double deltaNPlus1(const PARAM *p){
+  double somme=0;
+  int n=p->DIM-1;
+  for(int i=0; i<=n; i++) {
+    somme+=pow(p->zeta[i],2);
+  }
+  return p->delta[n]+(somme/p->rho);
+
+}
+
+/*affiche les resultats des methodes*/
+void print_secular(Secular *secular,int n,char titre[],double time){
+  int max=0,total=0;
+//  printf("\033[22;36mSOLUTION:(lambda,iteration)\n\033[0m");
+ printf("\033[22;36m%s\n\033[0m",titre);
+  printf("[");
+  for(int i=0;i<n;i++){
+    if(i<n-1){
+      printf("(%f,%d) ",secular[i].lambda,secular[i].nbIter);
+    }else{
+      printf("(%f,%d)]",secular[i].lambda,secular[i].nbIter);
+
+    }
+    total+=secular[i].nbIter;
+    if(secular[i].nbIter>max){
+      max=secular[i].nbIter;
+    }
+    //printf("Hybrid[%d]: lambda: %f nbIter:%d\n",i,tab1[i].lambda,tab1[i].nbIter);
+  }
+
+
+
+
+  printf("\033[22;32m\nTotal iterations:\033[0m");
+  printf("%d  ",total);
+  printf("\033[22;32mAverage iterations:\033[0m");
+  printf("%d  ",total/n);
+  printf("\033[22;32mLargest iterations:\033[0m");
+  printf("%d  ",max);
+  printf("\033[22;32mTime:\033[0m");
+  printf("%g  ",time);
+
+  printf("\n");
+}
+
+/*une petite aide pour utiliser solv_secular*/
+void help(){
+  printf("Use: solv_secular [method] [size]\n"
+          "Solving Secular Equations Stably and Efficiently\n"
+          "method:\n"
+          "       0:Gragg's\n"
+          "       1:Hybrid\n"
+          "       2:Gragg's & Hybrid\n"
+          "size:  size of matrix\n"
+          "Exemple: solv_secular 0 4\n");
+  }
+void free_data(const PARAM *p,Secular *s1,Secular *s2){
+  free(s1);
+  free(s2);
+  free((double *)p->zeta);
+  free((double *)p->delta);
+  free((PARAM *)p);
 }

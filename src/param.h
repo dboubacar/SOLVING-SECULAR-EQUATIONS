@@ -1,40 +1,54 @@
+/*
+Résolution de l’équation séculaire
+  Par: Boubacar Diallo  et
+       Jeffrey  Kebey
+
+Dans le cadre du Pojet SFPN
+
+gragg.h
+------
+
+Contient les prototypes des fonctions de param.c
+*/
+
+
 #ifndef DEF_PARAM
 #define DEF_PARAM
 
+#include <stdbool.h>
+#include <time.h>
+#include <sys/time.h>
+#define  EPSILON  1e-8//erreur abolue
+#define  MACHEPS pow(2,-52) //unité d'arrondi
 
+//structure pour les parametres de la fonction f(x)
 typedef struct{
   int DIM;
   double rho;
   double *zeta;
   double *delta;
 }PARAM;
+/*Structure pour le resultat de deux methode*/
+typedef struct{
+  int nbIter;//nombre d'iteration
+  double lambda;//le lamba trouvé par la methode
+}Secular;
 
-PARAM * init_param();
-double g(PARAM *p,double x,int k);
-double f(PARAM *p,double x);
-double f_prime(PARAM *p,double x);
-double f_seconde(PARAM *p,double x);
-double h(PARAM *p,double x,int k);
-void calcul_a_b_c(PARAM *p,double *a,double *b,double *c,double y,int k);
-void calcul_a(PARAM *p,double *a,double y,int k);
-void calcul_b(PARAM *p,double *b,double y,int k);
-void calcul_c(PARAM *p,double *c,double y,int k);
-void free_param(PARAM *p);
-
-/*voir array_free(struct Array *array_ptr)
-{
-    free(array_ptr->data);
-    array_ptr->data = NULL;    // précaution contre double array_free
-    array_ptr->size = 0;
-}*/
-
-
-
-void assert();
-
-
-
-
+PARAM * init_param(int dimension);
+double fun_f(const PARAM *p,double x);
+double fun_fprime(const PARAM *p,double x);
+double fun_fseconde(const PARAM *p,double x);
+double fun_g(const PARAM *p,double x,int k);
+double fun_h(const PARAM *p,double x,int k);
+double fun_psiprime(const PARAM *p,double x,int k);
+double fun_phiprime(const PARAM *p,double x,int k);
+double fun_fm(const PARAM *p,double x,int k);
+double fun_fmprime(const PARAM *p,double x,int k);
+bool infOuEgale(double a, double b);
+double deltaNPlus1(const PARAM *p);
+void print_secular(Secular *secular,int n,char titre[],double time);
+void help();
+void free_data(const PARAM *p,Secular *s1,Secular *s2);
 
 
 
