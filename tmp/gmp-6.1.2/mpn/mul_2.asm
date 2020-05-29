@@ -1,1 +1,0 @@
-../mpn/x86_64/atom/mul_2.asm
