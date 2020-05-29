@@ -106,13 +106,13 @@ bool stop_non_monotone(const PARAM* p,double y,int k){
   return infOuEgale(r2,r1);
 }
 
-/*Trouve le zero du gragg sur l'interavle
-  delta_k et delta_kplus1*/
-Secular * lambda_gragg(const PARAM * p,int k){
+/*Trouve le zero du gragg sur l'interavle  delta_k et delta_kplus1 */
+Secular * lambda_gragg(const PARAM * p,int k,double start){
   double y,y1=0,y2=0;
   bool stop=false;
+  double last_display = start;
   Secular *gr=malloc(sizeof(Secular));
-  gr->nbIter=1;
+  gr->nbIter=0;
   y=k<(p->DIM-1)?initial_monotone(p,k):initial_non_monotone(p);
   while(!stop){
     if((p->rho > 0 && k != p->DIM-1) || (p->rho < 0 && k != 0)) {
@@ -124,6 +124,15 @@ Secular * lambda_gragg(const PARAM * p,int k){
     gr->nbIter++;
     gr->lambda=y;
 
+    double t = wtime();
+    if (t - last_display > 0.5) {
+      /* verbosity */
+      double rate = gr->nbIter / (t - start);	// iterations per s.
+      fprintf(stderr, "\r      ----->iter : %d (%.1f it/s)",gr->nbIter, rate);
+      fflush(stdout);
+      last_display = t;
+    }
+
   }
   return gr;
 }
@@ -131,9 +140,11 @@ Secular * lambda_gragg(const PARAM * p,int k){
  /* La fonction gragg */
  Secular * gragg(const PARAM *p){
    Secular *tab=(Secular*)malloc(p->DIM*sizeof(Secular));
-   Secular *tmp;
+   fprintf(stderr, "[GRAAG] Starting iterative solver\n");
+   double start = wtime();
+   #pragma omp parallel for schedule(static)
    for(int i=0;i<p->DIM;i++){
-     tmp=lambda_gragg(p,i);
+     Secular *tmp=lambda_gragg(p,i,start);
      tab[i].nbIter=tmp->nbIter;
      tab[i].lambda=tmp->lambda;
      free(tmp);

@@ -66,8 +66,8 @@ double fixedWeight(const PARAM *p,double y,int k,bool useF){
 }
 
 /*Fait une commutation entre usage à deux  ou trois poles
-  en utilisant la methode Middle Way ou Fixed Weight
-  selon la situation */
+  en utilisant la methode Middle Way ou Fixed Weight selon la situation
+  */
 double commute(const PARAM *p,double y,int k ,bool isFixe){
   double ynew=0;
 	if(fun_fm(p,y,k)> 0){//usage de deux poles
@@ -79,12 +79,14 @@ double commute(const PARAM *p,double y,int k ,bool isFixe){
 }
 
 /*Trouve le zero du hybrid sur l'interavle
-  delta_k et delta_kplus1 en basculant entre les deux poles*/
-Secular * lambda_hybrid(const PARAM * p,int k){
+  delta_k et delta_kplus1 en basculant entre les deux poles
+  */
+Secular * lambda_hybrid(const PARAM * p,int k,double start){
   double y,ynew,fnew,fprec;
   Secular *hyb=malloc(sizeof(Secular));
   bool isFixe=true;
   bool stop=false;
+  double last_display = start;
   y=k<(p->DIM-1)?initial_monotone(p,k):initial_non_monotone(p);
   fprec=fun_f(p,y);
   ynew=commute(p,y,k,isFixe);
@@ -93,7 +95,7 @@ Secular * lambda_hybrid(const PARAM * p,int k){
      isFixe=false;
    }
    stop=stop_non_monotone(p,ynew,k);
-   hyb->nbIter=1;
+   hyb->nbIter=0;
    hyb->lambda=ynew;
    while(!stop){
      fprec=fnew;
@@ -105,6 +107,14 @@ Secular * lambda_hybrid(const PARAM * p,int k){
      stop=stop_non_monotone(p,ynew,k);
      hyb->nbIter++;
      hyb->lambda=ynew;
+     double t = wtime();
+     if (t - last_display > 0.5) {
+       /* verbosity */
+       double rate = hyb->nbIter / (t - start);	// iterations per s.
+       fprintf(stderr, "\r      ----->iter : %d (%.1f it/s)",hyb->nbIter, rate);
+       fflush(stdout);
+       last_display = t;
+     }
    }
    return hyb;
 }
@@ -112,9 +122,13 @@ Secular * lambda_hybrid(const PARAM * p,int k){
 /* La fonction hybrid*/
 Secular * hybrid(const PARAM *p){
   Secular *tab=(Secular*)malloc(p->DIM*sizeof(Secular));
-  Secular *tmp;
+  //  printf("\033[22;36mSOLUTION:(lambda,iteration)\n\033[0m");
+
+  fprintf(stderr, "\033[22;36m[HYBRID] Starting iterative solver\n\033[0m");
+  double start = wtime();
+  #pragma omp parallel for schedule(static)
   for(int i=0;i<p->DIM;i++){
-    tmp=lambda_hybrid(p,i);
+    Secular *tmp=lambda_hybrid(p,i,start);
     tab[i].nbIter=tmp->nbIter;
     tab[i].lambda=tmp->lambda;
     free(tmp);

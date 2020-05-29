@@ -1,3 +1,15 @@
+/*
+Résolution de l’équation séculaire
+  Par: Boubacar Diallo  et
+       Jeffrey  Kebey
+
+Dans le cadre du Pojet SFPN
+
+gragg.h
+------
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,11 +19,7 @@
 #include <math.h>
 
 
-double my_gettimeofday(){
-	struct timeval tmp_time;
-	gettimeofday(&tmp_time, NULL);
-	return tmp_time.tv_sec + (tmp_time.tv_usec * 1.0e-6L);
-}
+
 
 int main(int argc, char **argv)
 {
@@ -36,22 +44,23 @@ int main(int argc, char **argv)
   const PARAM * p=init_param(sizeMatrice);
   if(choix==0){
     printf("\033[22;36m*************SOLVING SECULAR EQUATIONS WITH GRAGG'S SCHEME\n\033[0m");
-    debut=my_gettimeofday();
+    debut=wtime();
     secu1=gragg(p);
-    time1=my_gettimeofday()-debut;
+    time1=wtime()-debut;
   }else if (choix==1){
     printf("\033[22;36m*************SOLVING SECULAR EQUATIONS WITH HYBRID SCHEME\n\033[0m");
-    debut=my_gettimeofday();
+    debut=wtime();
     secu1=hybrid(p);
-    time1=my_gettimeofday()-debut;
+    time1=wtime()-debut;
   }else{
     printf("\033[22;36m*********SOLVING SECULAR EQUATIONS WITH GRAGG'S & HYBRID\n\033[0m");
-    debut=my_gettimeofday();
+    debut=wtime();
     secu1=gragg(p);
-    time1=my_gettimeofday()-debut;
-    debut=my_gettimeofday();
+    time1=wtime()-debut;
+    debut=wtime();
+		printf("\n");
     secu2=hybrid(p);
-    time2=my_gettimeofday()-debut;
+    time2=wtime()-debut;
 
   }
 
@@ -80,9 +89,9 @@ int main(int argc, char **argv)
   printf("%f\n",p->rho);
 
   if(choix==2){
-    strcpy(titre, "SOLUTION WITH GRAGG'S:(lambda,iteration):");
+    strcpy(titre, "GRAGG(lambda,iteration):");
     print_secular(secu1,sizeMatrice,titre,time1);
-    strcpy(titre, "SOLUTION WITH HYBRID:(lambda,iteration):");
+    strcpy(titre, "HYBRID(lambda,iteration):");
     print_secular(secu2,sizeMatrice,titre,time2);
   }else{
     strcpy(titre, "SOLUTION:(lambda,iteration):");

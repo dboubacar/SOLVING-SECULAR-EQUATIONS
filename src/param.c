@@ -9,7 +9,7 @@ param.c
 ------
 
 Ces fonctions  implementent les fonctions mathematiques utilisees dans
-la methode de Gragg et hybride pour la resourde l'equation seculaire.
+la methode de Gragg et hybride pour la resolution l'equation seculaire.
 */
 
 
@@ -41,7 +41,9 @@ PARAM * init_param(int dimension){
   for(int i=0;i<dimension;i++){
     p->zeta[i]=p->zeta[i]/norm;
   }
-  p->rho  = 0.986602;
+  //double va=(double)rand();
+  p->rho=fmod((double)rand(),0.986602)+0.1;
+  //p->rho  = 0.986602;
   return p;
 }
 
@@ -133,6 +135,14 @@ double fun_fmprime(const PARAM *p,double x,int k){
   return p->rho*som;
 }
 
+/* Seconds (wall-clock time) since an arbitrary point in the past */
+double wtime()
+{
+	struct timeval ts;
+	gettimeofday(&ts, NULL);
+	return (double)ts.tv_sec + ts.tv_usec / 1e6;
+}
+
 /*cette fonction permet de resourde le probleme d'egalite
 en double precision avec une erreur relative*/
 bool infOuEgale(double a, double b){
@@ -158,20 +168,22 @@ double deltaNPlus1(const PARAM *p){
 void print_secular(Secular *secular,int n,char titre[],double time){
   int max=0,total=0;
 //  printf("\033[22;36mSOLUTION:(lambda,iteration)\n\033[0m");
- printf("\033[22;36m%s\n\033[0m",titre);
-  printf("[");
+ printf("\033[22;36m%s\033[0m",titre);
+  if(n<50)
+  printf("\n[");
   for(int i=0;i<n;i++){
-    if(i<n-1){
-      printf("(%f,%d) ",secular[i].lambda,secular[i].nbIter);
-    }else{
-      printf("(%f,%d)]",secular[i].lambda,secular[i].nbIter);
+    if(n<30){
+      if(i<n-1){
+        printf("(%f,%d) ",secular[i].lambda,secular[i].nbIter);
+      }else{
+        printf("(%f,%d)]",secular[i].lambda,secular[i].nbIter);
 
+      }
     }
     total+=secular[i].nbIter;
     if(secular[i].nbIter>max){
       max=secular[i].nbIter;
     }
-    //printf("Hybrid[%d]: lambda: %f nbIter:%d\n",i,tab1[i].lambda,tab1[i].nbIter);
   }
 
 
@@ -191,7 +203,7 @@ void print_secular(Secular *secular,int n,char titre[],double time){
 
 /*une petite aide pour utiliser solv_secular*/
 void help(){
-  printf("Use: solv_secular [method] [size]\n"
+  printf("USAGE: solv_secular [method] [size]\n"
           "Solving Secular Equations Stably and Efficiently\n"
           "method:\n"
           "       0:Gragg's\n"

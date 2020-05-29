@@ -1,0 +1,1 @@
+../mpn/x86_64/atom/sublsh1_n.asm

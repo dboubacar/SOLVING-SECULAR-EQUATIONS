@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS= -g -O3 -Wall
 LDFLAGS=
 EXEC=solv_secular
-LIB= -lm
+LIB= -lm -fopenmp
 
 
 all: $(EXEC)

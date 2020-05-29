@@ -1,0 +1,1 @@
+../mpn/x86_64/atom/redc_1.asm

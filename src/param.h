@@ -18,7 +18,9 @@ Contient les prototypes des fonctions de param.c
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
-#define  EPSILON  1e-8//erreur abolue
+#include <omp.h>
+
+#define  EPSILON  1e-6//erreur abolue
 #define  MACHEPS pow(2,-52) //unité d'arrondi
 
 //structure pour les parametres de la fonction f(x)
@@ -48,6 +50,7 @@ bool infOuEgale(double a, double b);
 double deltaNPlus1(const PARAM *p);
 void print_secular(Secular *secular,int n,char titre[],double time);
 void help();
+double wtime();
 void free_data(const PARAM *p,Secular *s1,Secular *s2);
 
 

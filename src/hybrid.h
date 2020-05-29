@@ -22,7 +22,7 @@ double fixedWeight(const PARAM *p,double y,int k,bool useF);
 
 double commute(const PARAM *p,double y,int k ,bool isFixe);
 
-Secular * lambda_hybrid(const PARAM * p,int k);
+Secular * lambda_hybrid(const PARAM * p,int k,double start);
 
 Secular * hybrid(const PARAM *p);
 
