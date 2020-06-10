@@ -81,12 +81,11 @@ double commute(const PARAM *p,double y,int k ,bool isFixe){
 /*Trouve le zero du hybrid sur l'interavle
   delta_k et delta_kplus1 en basculant entre les deux poles
   */
-Secular * lambda_hybrid(const PARAM * p,int k,double start){
+Secular * lambda_hybrid(const PARAM * p,int k){
   double y,ynew,fnew,fprec;
   Secular *hyb=malloc(sizeof(Secular));
   bool isFixe=true;
   bool stop=false;
-  double last_display = start;
   y=k<(p->DIM-1)?initial_monotone(p,k):initial_non_monotone(p);
   fprec=fun_f(p,y);
   ynew=commute(p,y,k,isFixe);
@@ -94,7 +93,7 @@ Secular * lambda_hybrid(const PARAM * p,int k,double start){
   if(fnew< 0 && fabs(fnew) > 0.1 * fabs(fprec)) {
      isFixe=false;
    }
-   stop=stop_non_monotone(p,ynew,k);
+   //stop=stop_non_monotone(p,ynew,k);
    hyb->nbIter=0;
    hyb->lambda=ynew;
    while(!stop){
@@ -107,14 +106,7 @@ Secular * lambda_hybrid(const PARAM * p,int k,double start){
      stop=stop_non_monotone(p,ynew,k);
      hyb->nbIter++;
      hyb->lambda=ynew;
-     double t = wtime();
-     if (t - last_display > 0.5) {
-       /* verbosity */
-       double rate = hyb->nbIter / (t - start);	// iterations per s.
-       fprintf(stderr, "\r      ----->iter : %d (%.1f it/s)",hyb->nbIter, rate);
-       fflush(stdout);
-       last_display = t;
-     }
+     if(hyb->nbIter>=4) break;
    }
    return hyb;
 }
@@ -122,17 +114,14 @@ Secular * lambda_hybrid(const PARAM * p,int k,double start){
 /* La fonction hybrid*/
 Secular * hybrid(const PARAM *p){
   Secular *tab=(Secular*)malloc(p->DIM*sizeof(Secular));
-  //  printf("\033[22;36mSOLUTION:(lambda,iteration)\n\033[0m");
-
   fprintf(stderr, "\033[22;36m[HYBRID] Starting iterative solver\n\033[0m");
-  double start = wtime();
-  #pragma omp parallel for schedule(static)
+  fprintf(stderr, "\033[22;36m\r         ----->iteration\n\033[0m");
+  #pragma omp parallel for
   for(int i=0;i<p->DIM;i++){
-    Secular *tmp=lambda_hybrid(p,i,start);
+    Secular *tmp=lambda_hybrid(p,i);
     tab[i].nbIter=tmp->nbIter;
     tab[i].lambda=tmp->lambda;
     free(tmp);
   }
   return tab;
-
 }

@@ -33,17 +33,17 @@ PARAM * init_param(int dimension){
   p->zeta= malloc(sizeof(double)*p->DIM);
   p->delta= malloc(sizeof(double)*p->DIM);
   for(int i=0; i<dimension; i++) {
-    p->delta[i]=(rand()/(double)RAND_MAX) +i+beta[betai];
+    p->delta[i]=(rand()/(double)RAND_MAX)+beta[betai]+i;
     p->zeta[i]=(rand()/(double)RAND_MAX)+beta[betai]+1;
     som += pow(p->zeta[i],2);
   }
   norm=sqrt(som);
+
+
   for(int i=0;i<dimension;i++){
     p->zeta[i]=p->zeta[i]/norm;
   }
-  //double va=(double)rand();
   p->rho=fmod((double)rand(),0.986602)+0.1;
-  //p->rho  = 0.986602;
   return p;
 }
 
@@ -147,10 +147,11 @@ double wtime()
 en double precision avec une erreur relative*/
 bool infOuEgale(double a, double b){
    if(a==b)   return 1;
-   double absError= fabs(a-b);
-   a= fabs(a);
-   b= fabs(b);
-   return   absError <= EPSILON   ||   ( absError / (a>b? a:b) )  <=  EPSILON;
+   double aa= fabs(a);
+   double bb= fabs(b);
+   double absError=aa-bb;
+
+   return   absError <= EPSILON   ||   ( absError / (aa>bb? aa:bb) )  <=  EPSILON;
 }
 
 /*calcul le dernier delta sur l'interval non monotone*/

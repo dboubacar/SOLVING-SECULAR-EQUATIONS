@@ -22,7 +22,7 @@ double initial_non_monotone(const PARAM *p);
 double y_next(const PARAM *p, double y,int k);
 bool stop_non_monotone(const PARAM* p,double y,int k);
 bool stop_monotone(double *y,double *y1,double *y2,int i);
-Secular * lambda_gragg(const PARAM * p,int k,double start);
+Secular * lambda_gragg(const PARAM * p,int k);
 Secular * gragg(const PARAM *p);
 
 

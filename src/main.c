@@ -43,6 +43,8 @@ int main(int argc, char **argv)
 
   const PARAM * p=init_param(sizeMatrice);
   if(choix==0){
+
+
     printf("\033[22;36m*************SOLVING SECULAR EQUATIONS WITH GRAGG'S SCHEME\n\033[0m");
     debut=wtime();
     secu1=gragg(p);
@@ -95,9 +97,8 @@ int main(int argc, char **argv)
     print_secular(secu2,sizeMatrice,titre,time2);
   }else{
     strcpy(titre, "SOLUTION:(lambda,iteration):");
-    print_secular(secu1,sizeMatrice,titre,time1);
+     print_secular(secu1,sizeMatrice,titre,time1);
   }
-	//PARAM *tmp=p;
 	free_data(p,secu1,secu2);
   return 0;
 }

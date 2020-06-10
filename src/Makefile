@@ -1,30 +1,23 @@
-CC=gcc
-CFLAGS= -g -O3 -Wall
-LDFLAGS=
-EXEC=solv_secular
+CC= gcc
+CFLAGS= -O3 -Wall -Wextra -g
+EXEC= solv_secular
+OBJ= param.o gragg.o main.o hybrid.o
 LIB= -lm -fopenmp
 
+all: $(OBJ)
+	$(CC) $(CFLAGS)  $(OBJ) -o $(EXEC) $(LIB)
 
-all: $(EXEC)
+gragg.o: gragg.c
+	$(CC) -c $(CFLAGS) $< $(LIB)
 
-solv_secular: param.o gragg.o main.o hybrid.o
-	$(CC) -o $@ $^ $(LDFLAGS)  $(LIB)
+hybrid.o: hybrid.c
+		$(CC) -c $(CFLAGS) $< $(LIB)
 
-main.o: main.c gragg.h param.h hybrid.h
-	$(CC) -o $@ -c $< $(CFLAGS) $(LIB)
-
-gragg.o: gragg.c param.h
-	$(CC) -o $@ -c $< $(CFLAGS) $(LIB)
-
-hybrid.o: hybrid.c param.h
-	$(CC) -o $@ -c $< $(CFLAGS) $(LIB)
-
-param.o: param.c
-	$(CC) -o $@ -c $< $(CFLAGS) $(LIB)
+param.o:param.c param.h
+	$(CC) -c $(CFLAGS) param.c  $(LIB)
 
 
-clean:
-	rm -rf *.o solv_secular
+.PHONY: clean
 
-mrproper: clean
-	rm -rf $(EXEC)
+clean :
+	rm -rf $(EXEC) *~ *.o

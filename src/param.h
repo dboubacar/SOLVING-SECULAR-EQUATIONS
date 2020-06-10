@@ -20,7 +20,7 @@ Contient les prototypes des fonctions de param.c
 #include <sys/time.h>
 #include <omp.h>
 
-#define  EPSILON  1e-6//erreur abolue
+#define  EPSILON  1e-15//erreur abolue
 #define  MACHEPS pow(2,-52) //unité d'arrondi
 
 //structure pour les parametres de la fonction f(x)
